@@ -4,6 +4,14 @@ THE AUTOMATIC COVER - SENSOR EDITION
 Ports:
 Pressure - Analog pin A0
 Humidity - Digital pin 8 (3.3v)
+LCD - Digital pins 2, 3, 4, 5, 11, and 12
+*/
+
+
+/* 
+TO-DO
+
+1. Check if it's still raining every 10 minutes
 */
 
 // INITIALIZE HUMIDITY SENSOR
@@ -29,7 +37,7 @@ void setup() {
   lcd.print("Auto Cover");
   lcd.setCursor(0,1);
   lcd.print("Started");
-  delay(2000);
+  delay(5000);
   lcd.clear();
   lcd.setCursor(0,0);
 }
@@ -39,12 +47,13 @@ void loop() {
 // CHECK PRESSURE
 
  int pressure = analogRead(A0);
- delay(500);
+ delay(100);
  
  // IF PRESSURE DETECTED, CHECK HUMIDITY
  
  if (pressure > 50) {
- 	Serial.println("PRESSURE DETECTED");
+ 	Serial.print("Pressure: ");
+ 	Serial.println(pressure);
  	lcd.clear();
  	lcd.setCursor(0,0);
  	lcd.print("Rain drop");
@@ -58,12 +67,16 @@ void loop() {
  	lcd.print("humidity");
  	delay(3000);
  	float humidity = dht.readHumidity();
+ 	Serial.print("Humidity: ");
+ 	Serial.print(humidity);
+ 	Serial.println("%");
  	if (humidity > 50) {
  		
  // IF PRESSURE DETECTED AND HUMIDITY > 90%, isRaining = true
  
  		bool isRaining = true;
- 		Serial.println("RAIN DETECTED");
+ 		Serial.print("Rain Detected");
+ 		Serial.println("");
  		lcd.clear();
  		lcd.print("Rain");
  		lcd.setCursor(0,1);
@@ -71,7 +84,8 @@ void loop() {
  		delay(10000);
  	}
  	else {
- 		Serial.print("FALSE POSITIVE - HUMIDITY OVERRIDE");
+ 		Serial.print("False positive - humidity override");
+ 		Serial.println("");
  		lcd.clear();
  		lcd.setCursor(0,0);
  		lcd.print("Humidity");
