@@ -1,11 +1,12 @@
 /*
 THE AUTOMATIC COVER
-Version 1.2
+Version 1.3
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
 1.05 - Started work on stepper motor output
 1.1 - More stepper motor work
+1.3 - Updated LCD to show cover opening / closing
 
 Ports:
 Pressure - Analog pin A0
@@ -55,6 +56,12 @@ int steppin = 3;
 // OPENS THE COVER
 
 void openCover() {
+  Serial.print("Opening Cover...");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Opening");
+  lcd.setCursor(0,1);
+  lcd.print("Cover");
   int i;
 digitalWrite(dirpin, LOW);     // Set the direction.
 delay(100);
@@ -67,6 +74,11 @@ for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps.
 }                             // particular motor. Any faster the motor stalls.
 
 void closeCover() {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Closing");
+  lcd.setCursor(0,1);
+  lcd.print("Cover");
   int i;
 digitalWrite(dirpin, HIGH);    // Change direction.
 delay(100);
