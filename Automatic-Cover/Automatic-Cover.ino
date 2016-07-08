@@ -60,7 +60,7 @@ void checkHumidity() {
 
     // IF PRESSURE DETECTED AND HUMIDITY < 90%, isRaining = False
 
-    bool isRaining = false
+    bool isRaining = false;
     Serial.print("False positive - humidity override");
     Serial.println("");
     lcd.clear();
@@ -111,7 +111,7 @@ void loop() {
 unsigned long currentMillis = millis();
 if (currentMillis - previousMillis >= interval) {
   previousMillis = currentMillis;
-  if isRaining = true {
+  if (isRaining = true) {
     checkHumidity();
     }
   }
