@@ -1,10 +1,11 @@
 /*
 THE AUTOMATIC COVER
-Version 1.05
+Version 1.2
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
 1.05 - Started work on stepper motor output
+1.1 - More stepper motor work
 
 Ports:
 Pressure - Analog pin A0
@@ -13,6 +14,16 @@ LCD - Digital pins 2, 3, 4, 5, 11, and 12
 
 NEEDED LIBARIES:
 DHT Sensor Libary: https://github.com/adafruit/DHT-sensor-library
+*/
+
+/*
+NOTES:
+dirpin is directional
+steppin is how much you want to move
+~800 steps = one full revolution
+
+TO-DO:
+1. Calabrate stepper motor to turn required amount.
 */
 
 // INPUT
@@ -38,6 +49,34 @@ int pressure;
 float humidity;
 unsigned long previousMillis = 0;
 const long interval = 60000; // Rain update frequency (ms)
+int dirpin = 2;
+int steppin = 3;
+
+// OPENS THE COVER
+
+void openCover() {
+  int i;
+digitalWrite(dirpin, LOW);     // Set the direction.
+delay(100);
+for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps.
+{
+  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+  delayMicroseconds(500);      // This delay time is close to top speed for this
+}
+}                             // particular motor. Any faster the motor stalls.
+
+void closeCover() {
+  int i;
+digitalWrite(dirpin, HIGH);    // Change direction.
+delay(100);
+for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps
+{
+  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+  delayMicroseconds(500);      // This delay time is close to top speed for this
+}                              // particular motor. Any faster the motor stalls.
+}
 
 void checkHumidity() {
   lcd.clear();
@@ -63,6 +102,7 @@ void checkHumidity() {
     lcd.setCursor(0,1);
     lcd.print("detected");
     delay(5000);
+    openCover();
   }
   else {
 
@@ -82,7 +122,8 @@ void checkHumidity() {
 
 void setup() {
   Serial.begin(9600);
-  myStepper.setSpeed(60);
+  pinMode(dirpin, OUTPUT);
+  pinMode(steppin, OUTPUT);
   dht.begin();
   lcd.begin(16, 2);
   lcd.clear();
@@ -115,26 +156,16 @@ void loop() {
   checkHumidity();
   }
 
-// RAIN UPDATING
+// RAIN UPDATING + CLOSES COVER IF HUMIDITY < 90%
 
 unsigned long currentMillis = millis();
 if (currentMillis - previousMillis >= interval) {
   previousMillis = currentMillis;
   if (isRaining = true) {
     checkHumidity();
+    if (isRaining = false) {
+      closeCover();
+    }
     }
   }
-
-// OUTPUT
-
-if (isRaining = true) {
-  Serial.print("Opening Cover");
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Opening");
-  lcd.setCursor(0,1);
-  lcd.print("cover");
-  myStepper.step(stepsPerRevolution);
-}
-
 }
