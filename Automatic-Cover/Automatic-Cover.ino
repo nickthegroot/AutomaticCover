@@ -1,9 +1,10 @@
 /*
 THE AUTOMATIC COVER
-Version 1.0
+Version 1.05
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
+1.05 - Started work on stepper motor output
 
 Ports:
 Pressure - Analog pin A0
@@ -25,6 +26,11 @@ DHT dht(DHTPIN, DHTTYPE); // Initialize DHT sensor.
 // INITIALIZE LCD
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12,11,5,4,3,2);
+
+// INITIALIZE STEPPER
+#include <Stepper.h>
+const int stepsPerRevolution = 200;  // Number of steps per revolution
+Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11); // Pins for stepper motor
 
 // INITIALIZE VARIABLES
 bool isRaining;
@@ -56,7 +62,7 @@ void checkHumidity() {
     lcd.print("Rain");
     lcd.setCursor(0,1);
     lcd.print("detected");
-    delay(10000);
+    delay(5000);
   }
   else {
 
@@ -70,12 +76,13 @@ void checkHumidity() {
     lcd.print("Humidity");
     lcd.setCursor(0,1);
     lcd.print("Override");
-    delay(10000);
+    delay(5000);
     }
 }
 
 void setup() {
   Serial.begin(9600);
+  myStepper.setSpeed(60);
   dht.begin();
   lcd.begin(16, 2);
   lcd.clear();
@@ -120,8 +127,14 @@ if (currentMillis - previousMillis >= interval) {
 
 // OUTPUT
 
-if isRaining = true {
- 
+if (isRaining = true) {
+  Serial.print("Opening Cover");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Opening");
+  lcd.setCursor(0,1);
+  lcd.print("cover");
+  myStepper.step(stepsPerRevolution);
 }
 
 }
