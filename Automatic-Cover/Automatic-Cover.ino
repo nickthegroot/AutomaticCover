@@ -1,5 +1,9 @@
 /*
-THE AUTOMATIC COVER - SENSOR EDITION
+THE AUTOMATIC COVER
+Version 1.0
+
+ChangeLog:
+1.0 - Compleated all sensor + LCD work.
 
 Ports:
 Pressure - Analog pin A0
@@ -8,11 +12,9 @@ LCD - Digital pins 2, 3, 4, 5, 11, and 12
 
 NEEDED LIBARIES:
 DHT Sensor Libary: https://github.com/adafruit/DHT-sensor-library
-
-TO-DO
-
-1. Check if it's still raining every 10 minutes
 */
+
+// INPUT
 
 // INITIALIZE HUMIDITY SENSOR
 #include "DHT.h"
@@ -115,4 +117,11 @@ if (currentMillis - previousMillis >= interval) {
     checkHumidity();
     }
   }
+
+// OUTPUT
+
+if isRaining = true {
+ 
+}
+
 }
