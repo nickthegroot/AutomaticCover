@@ -1,4 +1,4 @@
-/* 
+/*
 THE AUTOMATIC COVER - SENSOR EDITION
 
 Ports:
@@ -8,7 +8,7 @@ LCD - Digital pins 2, 3, 4, 5, 11, and 12
 */
 
 
-/* 
+/*
 TO-DO
 
 1. Check if it's still raining every 10 minutes
@@ -43,14 +43,14 @@ void setup() {
 }
 
 void loop() {
-  
+
 // CHECK PRESSURE
 
  int pressure = analogRead(A0);
  delay(100);
- 
+
  // IF PRESSURE DETECTED, CHECK HUMIDITY
- 
+
  if (pressure > 50) {
   Serial.print("Pressure: ");
   Serial.println(pressure);
@@ -71,9 +71,9 @@ void loop() {
   Serial.print(humidity);
   Serial.println("%");
   if (humidity > 50) {
-    
+
  // IF PRESSURE DETECTED AND HUMIDITY > 90%, isRaining = true
- 
+
     bool isRaining = true;
     Serial.print("Rain Detected");
     Serial.println("");
@@ -95,3 +95,6 @@ void loop() {
     }
   }
 }
+
+// Testing, Testing
+// One, Two, Three
