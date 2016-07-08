@@ -43,7 +43,7 @@ void setup() {
 }
 
 void loop() {
-	
+  
 // CHECK PRESSURE
 
  int pressure = analogRead(A0);
@@ -52,46 +52,46 @@ void loop() {
  // IF PRESSURE DETECTED, CHECK HUMIDITY
  
  if (pressure > 50) {
- 	Serial.print("Pressure: ");
- 	Serial.println(pressure);
- 	lcd.clear();
- 	lcd.setCursor(0,0);
- 	lcd.print("Rain drop");
- 	lcd.setCursor(0,1);
- 	lcd.print("detected");
- 	delay(1000);
- 	lcd.clear();
- 	lcd.setCursor(0,0);
- 	lcd.print("Checking");
- 	lcd.setCursor(0,1);
- 	lcd.print("humidity");
- 	delay(3000);
- 	float humidity = dht.readHumidity();
- 	Serial.print("Humidity: ");
- 	Serial.print(humidity);
- 	Serial.println("%");
- 	if (humidity > 50) {
- 		
+  Serial.print("Pressure: ");
+  Serial.println(pressure);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Rain drop");
+  lcd.setCursor(0,1);
+  lcd.print("detected");
+  delay(1000);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Checking");
+  lcd.setCursor(0,1);
+  lcd.print("humidity");
+  delay(3000);
+  float humidity = dht.readHumidity();
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println("%");
+  if (humidity > 50) {
+    
  // IF PRESSURE DETECTED AND HUMIDITY > 90%, isRaining = true
  
- 		bool isRaining = true;
- 		Serial.print("Rain Detected");
- 		Serial.println("");
- 		lcd.clear();
- 		lcd.print("Rain");
- 		lcd.setCursor(0,1);
- 		lcd.print("detected");
- 		delay(10000);
- 	}
- 	else {
- 		Serial.print("False positive - humidity override");
- 		Serial.println("");
- 		lcd.clear();
- 		lcd.setCursor(0,0);
- 		lcd.print("Humidity");
- 		lcd.setCursor(0,1);
- 		lcd.print("Override");
- 		delay(10000);
-		}
-	}
+    bool isRaining = true;
+    Serial.print("Rain Detected");
+    Serial.println("");
+    lcd.clear();
+    lcd.print("Rain");
+    lcd.setCursor(0,1);
+    lcd.print("detected");
+    delay(10000);
+  }
+  else {
+    Serial.print("False positive - humidity override");
+    Serial.println("");
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Humidity");
+    lcd.setCursor(0,1);
+    lcd.print("Override");
+    delay(10000);
+    }
+  }
 }
