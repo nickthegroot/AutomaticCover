@@ -1,12 +1,13 @@
 /*
 THE AUTOMATIC COVER
-Version 1.3
+Version 1.4
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
 1.05 - Started work on stepper motor output
 1.1 - More stepper motor work
 1.3 - Updated LCD to show cover opening / closing
+1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
 
 Ports:
 Pressure - Analog pin A0
@@ -107,13 +108,13 @@ void checkHumidity() {
   // IF PRESSURE DETECTED AND HUMIDITY > 90%, isRaining = true
 
     bool isRaining = true;
-    Serial.print("Rain Detected");
+    Serial.println("Rain Detected");
     Serial.println("");
     lcd.clear();
     lcd.print("Rain");
     lcd.setCursor(0,1);
     lcd.print("detected");
-    delay(5000);
+    delay(2000);
     openCover();
   }
   else {
@@ -121,14 +122,14 @@ void checkHumidity() {
     // IF PRESSURE DETECTED AND HUMIDITY < 90%, isRaining = False
 
     bool isRaining = false;
-    Serial.print("False positive - humidity override");
+    Serial.println("False positive - humidity override");
     Serial.println("");
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("Humidity");
     lcd.setCursor(0,1);
     lcd.print("Override");
-    delay(5000);
+    delay(2000);
     }
 }
 
@@ -149,10 +150,14 @@ void setup() {
 
 void loop() {
 
+// ONLY CHECK FOR PRESSURE IF IT'S NOT RAINING
+
+while (isRaining = false) {
+
 // CHECK PRESSURE
 
  int pressure = analogRead(A0);
- delay(100);
+ delay(50);
 
  // IF PRESSURE DETECTED, CHECK HUMIDITY
 
@@ -167,8 +172,8 @@ void loop() {
   delay(1000);
   checkHumidity();
   }
-
-// RAIN UPDATING + CLOSES COVER IF HUMIDITY < 90%
+}
+// RAIN UPDATING + CLOSING COVER IF HUMIDITY < 90% EVERY 10 MINUTES
 
 unsigned long currentMillis = millis();
 if (currentMillis - previousMillis >= interval) {
