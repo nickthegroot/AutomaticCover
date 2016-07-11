@@ -1,6 +1,6 @@
 /*
 THE AUTOMATIC COVER
-Version 1.41
+Version 1.42
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
@@ -9,6 +9,7 @@ ChangeLog:
 1.3 - Updated LCD to show cover opening / closing
 1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
 1.41 - Minor formatting changes
+1.42 - Minor fixes
 
 Ports:
 Pressure - Analog pin A0
@@ -66,11 +67,11 @@ void openCover() {
 digitalWrite(dirpin, LOW);     // Set the direction.
 delay(100);
 for (i = 0; i<4000; i++)       // Iterate for 4000 microsteps.
-{
+  {
   digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
   digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
   delayMicroseconds(500);      // This delay time is close to top speed for this
-}
+ }
 }                             // particular motor. Any faster the motor stalls.
 
 void closeCover() {
@@ -149,29 +150,23 @@ void setup() {
 
 void loop() {
 
-// ONLY CHECK FOR PRESSURE IF IT'S NOT RAINING
-
-while (isRaining = false) {
-
 // CHECK PRESSURE
 
  int pressure = analogRead(A0);
  delay(50);
 
  // IF PRESSURE DETECTED, CHECK HUMIDITY
-
  if (pressure > 50) {
   Serial.print("Pressure: ");
   Serial.println(pressure);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Rain drop");
+  lcd.print("Pressure");
   lcd.setCursor(0,1);
   lcd.print("detected");
   delay(1000);
   checkHumidity();
   }
-}
 // RAIN UPDATING + CLOSING COVER IF HUMIDITY < 90% EVERY 10 MINUTES
 
 unsigned long currentMillis = millis();
@@ -181,7 +176,7 @@ if (currentMillis - previousMillis >= interval) {
     checkHumidity();
     if (isRaining = false) {
       closeCover();
-    }
+      }
     }
   }
 }
