@@ -1,30 +1,22 @@
 /*
 THE AUTOMATIC COVER
-Version 1.51
+Version 1.6
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
 1.05 - Started work on stepper motor output
 1.1 - More stepper motor work
+1.2 - ???
 1.3 - Updated LCD to show cover opening / closing
 1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
 1.41 - Minor formatting changes
 1.42 - Minor fixes
 1.5 - Added override button and other minor changes
 1.51 - Minor changes
+1.6 - Changed the way the override button works
 
-Ports:
-Pressure - Analog pin A0
-Humidity (DHT22) - Digital pin 8 (3.3v)
-LCD - Digital pins 2, 3, 4, 5, 11, and 12
-
-NEEDED LIBARIES:
-DHT Sensor Libary: https://github.com/adafruit/DHT-sensor-library
-
-NOTES:
-dirpin is directional
-steppin is how much you want to move
-~800 steps = one full revolution
+IMPORTANT:
+Ports and needed libaries are listed in README.me
 
 TO-DO:
 1. Calabrate stepper motor to turn required amount.
@@ -46,12 +38,14 @@ LiquidCrystal lcd(12,11,5,4,3,2);
 bool coverOut;
 int pressure;
 float humidity;
+int overrideState;
+int coverOpening;
 unsigned long previousMillis = 0;
 const long interval = 10 * 60000; // Rain update frequency in minutes [minutes] * 60000
-int dirpin = 6;
-int steppin = 7;
+int dirpin = 6; // Pin for the "dir" slot on the stepper motor shield
+int steppin = 7; // Pin for the "step" slot on the stepper motor shield
 const int overridePin = 9;  // Pin for the override button
-int overrideState;
+int stepsPerOpen; // The number of steps per the cover being fully extended
 
 // OPENS THE COVER
 
@@ -152,21 +146,52 @@ void setup() {
 
 void loop() {
 
-  // OVERRIDE BUTTON
+// OVERRIDE BUTTON
 
 overrideState = digitalRead(overridePin);
 
-if (overrideState == LOW) {
-  if (coverOut == true) {
-    closeCover();
-    coverOut = false;
-    delay(100);
-  }
-  else {
-    openCover();
-    coverOut = true;
-    delay(100);
+while (overrideState == LOW) {
+
+// KEEPS CHECKING IF OVERRIDE BUTTON IS PRESSED
+
+  overrideState = digitalRead(overridePin);
+
+// OPENS COVER UNTILL FULLY EXTENDED
+
+  while (coverOpening > stepsPerOpen) {
+    coverOpening++;
+    digitalWrite(dirpin, LOW);     // Set the direction.
+    digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+    digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+    delayMicroseconds(500);      // This delay time is close to top speed for this
 }
+
+// WAITS FIVE SECONDS IF COVER IS FULLY EXTENDED
+
+  if (coverOpening == stepsPerOpen) {
+    coverOut = true;
+    delay(5000);
+    coverOpening++;
+  }
+
+// CLOSES COVER UNTILL FULLY CLOSED
+
+  while (coverOpening < stepsPerOpen * 2) {
+    coverOpening++;
+    digitalWrite(dirpin, HIGH);    // Set the direction
+    digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+    digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+    delayMicroseconds(500);      // This delay time is close to top speed for this
+ }
+
+
+ // WAITS FIVE SECONDS IF COVER IS FULLY CLOSED
+
+ if (coverOpening == stepsPerOpen * 2) {
+   coverOut = false;
+   delay(5000);
+   coverOpening = 0;
+ }
 }
 
 // CHECK PRESSURE
