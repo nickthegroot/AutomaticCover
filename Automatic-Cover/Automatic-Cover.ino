@@ -1,6 +1,6 @@
 /*
 THE AUTOMATIC COVER
-Version 1.4
+Version 1.41
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
@@ -8,6 +8,7 @@ ChangeLog:
 1.1 - More stepper motor work
 1.3 - Updated LCD to show cover opening / closing
 1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
+1.41 - Minor formatting changes
 
 Ports:
 Pressure - Analog pin A0
@@ -16,9 +17,7 @@ LCD - Digital pins 2, 3, 4, 5, 11, and 12
 
 NEEDED LIBARIES:
 DHT Sensor Libary: https://github.com/adafruit/DHT-sensor-library
-*/
 
-/*
 NOTES:
 dirpin is directional
 steppin is how much you want to move
@@ -50,7 +49,7 @@ bool isRaining;
 int pressure;
 float humidity;
 unsigned long previousMillis = 0;
-const long interval = 60000; // Rain update frequency (ms)
+const long interval = 10 * 60000; // Rain update frequency in minutes [minutes] * 60000
 int dirpin = 2;
 int steppin = 3;
 
