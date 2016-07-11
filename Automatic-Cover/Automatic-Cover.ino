@@ -1,6 +1,6 @@
 /*
 THE AUTOMATIC COVER
-Version 1.5
+Version 1.51
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
@@ -11,6 +11,7 @@ ChangeLog:
 1.41 - Minor formatting changes
 1.42 - Minor fixes
 1.5 - Added override button and other minor changes
+1.51 - Minor changes
 
 Ports:
 Pressure - Analog pin A0
@@ -159,10 +160,13 @@ if (overrideState == LOW) {
   if (coverOut == true) {
     closeCover();
     coverOut = false;
+    delay(100);
   }
-  else
+  else {
     openCover();
     coverOut = true;
+    delay(100);
+}
 }
 
 // CHECK PRESSURE
@@ -171,7 +175,7 @@ if (overrideState == LOW) {
  delay(50);
 
  // IF PRESSURE DETECTED, CHECK HUMIDITY
- if (pressure > 50) {
+ if (pressure > 20) {
   Serial.print("Pressure: ");
   Serial.println(pressure);
   lcd.clear();
