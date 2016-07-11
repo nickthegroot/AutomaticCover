@@ -1,6 +1,6 @@
 /*
 THE AUTOMATIC COVER
-Version 1.42
+Version 1.5
 
 ChangeLog:
 1.0 - Compleated all sensor + LCD work.
@@ -10,6 +10,7 @@ ChangeLog:
 1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
 1.41 - Minor formatting changes
 1.42 - Minor fixes
+1.5 - Added override button and other minor changes
 
 Ports:
 Pressure - Analog pin A0
@@ -40,19 +41,16 @@ DHT dht(DHTPIN, DHTTYPE); // Initialize DHT sensor.
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12,11,5,4,3,2);
 
-// INITIALIZE STEPPER
-#include <Stepper.h>
-const int stepsPerRevolution = 200;  // Number of steps per revolution
-Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11); // Pins for stepper motor
-
 // INITIALIZE VARIABLES
-bool isRaining;
+bool coverOut;
 int pressure;
 float humidity;
 unsigned long previousMillis = 0;
 const long interval = 10 * 60000; // Rain update frequency in minutes [minutes] * 60000
-int dirpin = 2;
-int steppin = 3;
+int dirpin = 6;
+int steppin = 7;
+const int overridePin = 9;  // Pin for the override button
+int overrideState;
 
 // OPENS THE COVER
 
@@ -105,9 +103,9 @@ void checkHumidity() {
 
   if (humidity > 50) {
 
-  // IF PRESSURE DETECTED AND HUMIDITY > 90%, isRaining = true
+  // IF PRESSURE DETECTED AND HUMIDITY > 90%, coverOut = true
 
-    bool isRaining = true;
+    bool coverOut = true;
     Serial.println("Rain Detected");
     Serial.println("");
     lcd.clear();
@@ -119,9 +117,9 @@ void checkHumidity() {
   }
   else {
 
-    // IF PRESSURE DETECTED AND HUMIDITY < 90%, isRaining = False
+    // IF PRESSURE DETECTED AND HUMIDITY < 90%, coverOut = False
 
-    bool isRaining = false;
+    bool coverOut = false;
     Serial.println("False positive - humidity override");
     Serial.println("");
     lcd.clear();
@@ -137,6 +135,9 @@ void setup() {
   Serial.begin(9600);
   pinMode(dirpin, OUTPUT);
   pinMode(steppin, OUTPUT);
+  digitalWrite(dirpin, LOW);
+  digitalWrite(steppin, LOW);
+  pinMode(overridePin, INPUT);
   dht.begin();
   lcd.begin(16, 2);
   lcd.clear();
@@ -149,6 +150,20 @@ void setup() {
 }
 
 void loop() {
+
+  // OVERRIDE BUTTON
+
+overrideState = digitalRead(overridePin);
+
+if (overrideState == LOW) {
+  if (coverOut == true) {
+    closeCover();
+    coverOut = false;
+  }
+  else
+    openCover();
+    coverOut = true;
+}
 
 // CHECK PRESSURE
 
@@ -172,9 +187,9 @@ void loop() {
 unsigned long currentMillis = millis();
 if (currentMillis - previousMillis >= interval) {
   previousMillis = currentMillis;
-  if (isRaining = true) {
+  if (coverOut = true) {
     checkHumidity();
-    if (isRaining = false) {
+    if (coverOut = false) {
       closeCover();
       }
     }
