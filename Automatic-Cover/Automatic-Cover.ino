@@ -1,27 +1,19 @@
 /*
 THE AUTOMATIC COVER
-Version 1.7
+Version 2.0
 
-ChangeLog:
-1.0 - Compleated all sensor + LCD work.
-1.05 - Started work on stepper motor output
-1.1 - More stepper motor work
-1.2 - ???
-1.3 - Updated LCD to show cover opening / closing
-1.4 - Bug fixes, timing changes, and checking for rain only when not raining.
-1.41 - Minor formatting changes
-1.42 - Minor fixes
-1.5 - Added override button and other minor changes
-1.51 - Minor changes
-1.6 - Changed the way the override button works
-1.7 - Major bug fixes and went back to old override button
+Changelog for Version 2.0:
+* Added more functions for better understanding
+* Added better comments for better understanding
+* Fixed bug where the override button would open the cover after the cover was opened by rain.
+* Fixed bug where the cover would come in when not raining after override button was pushed
+* Other minor changes
 
 IMPORTANT:
 Ports and needed libaries are listed in README.me
 
 TO-DO:
 1. Calabrate stepper motor to turn required amount.
-2. Set up better global variables (coverOut not working globally)
 */
 
 // INPUT
@@ -40,55 +32,62 @@ LiquidCrystal lcd(12,11,5,4,3,2);
 bool coverOut;
 int pressure;
 float humidity;
-int overrideState;
+bool overrideOut;
+bool overrideButton;
 unsigned long previousMillis = 0;
-const long interval = 10 * 60000; // Rain update frequency in minutes [minutes] * 60000
+const long updateInterval = 10 * 60000; // Rain update frequency in minutes [minutes] * 60000
 int dirpin = 6; // Pin for the "dir" slot on the stepper motor shield
 int steppin = 7; // Pin for the "step" slot on the stepper motor shield
 const int overridePin = 9;  // Pin for the override button
 int stepsPerOpen = 10000; // The number of steps per the cover being fully extended
-int pressureThreshold = 50;
+int pressureThreshold = 50; // The threshold for the pressure to activate
+int humidityThreshold = 90: // The threshold for the humidity to activate (%)
 
-// OPENS THE COVER
 
-void openCover() {
-  bool coverOut = true;
-  Serial.print("Opening Cover...");
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Opening");
-  lcd.setCursor(0,1);
-  lcd.print("Cover");
-  int i;
-digitalWrite(dirpin, LOW);     // Set the direction.
-delay(100);
-for (i = 0; i<stepsPerOpen; i++)
-  {
-  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
-  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
-  delayMicroseconds(500);      // This delay time is close to top speed for this
+// CUSTOM FUNCTIONS
+
+
+// Controls the override button
+void overrideCheck() {
+  // Checks if the override button is pushed
+  overrideButton = digitalRead(overridePin);
+  coverOut = checkCover(coverOut);
+  // If button is pushed and the cover is in, push the cover out
+    if (overrideButton == LOW) {
+      if (coverOut == false) {
+        openCover();
+        overrideActivated(true);
+  }
+  // If the button is pushed and the cover is out, pull the cover in
+      else {
+        closeCover();
+        overrideActivated(false);
+  }
  }
-}                             // particular motor. Any faster the motor stalls.
-
-void closeCover() {
-  bool coverOut = false;
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Closing");
-  lcd.setCursor(0,1);
-  lcd.print("Cover");
-  int i;
-digitalWrite(dirpin, HIGH);    // Change direction.
-delay(100);
-for (i = 0; i<stepsPerOpen; i++)
-{
-  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
-  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
-  delayMicroseconds(500);      // This delay time is close to top speed for this
-}                              // particular motor. Any faster the motor stalls.
 }
 
-void checkHumidity() {
+// Checks for pressure coming from rain drops
+void pressureCheck() {
+
+  int pressure = analogRead(A0);
+  delay(50);
+
+  // IF PRESSURE DETECTED, CHECK HUMIDITY
+  if (pressure > pressureThreshold) {
+   Serial.print("Pressure: ");
+   Serial.println(pressure);
+   lcd.clear();
+   lcd.setCursor(0,0);
+   lcd.print("Pressure");
+   lcd.setCursor(0,1);
+   lcd.print("detected");
+   delay(1000);
+   humidityCheck();
+   }
+}
+
+// Makes sure the humidity is above 90% (raining) when pressure is detected
+void humidityCheck() {
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Checking");
@@ -100,7 +99,7 @@ void checkHumidity() {
   Serial.print(humidity);
   Serial.println("%");
 
-  if (humidity > 50) {
+  if (humidity > humidityThreshold) {
 
   // IF PRESSURE DETECTED AND HUMIDITY > 90%, coverOut = true
 
@@ -112,7 +111,6 @@ void checkHumidity() {
     lcd.print("detected");
     delay(2000);
     openCover();
-    coverOut = true;
 
   }
   else {
@@ -129,6 +127,85 @@ void checkHumidity() {
     delay(2000);
     }
 }
+
+// Makes sure rain is still falling by checking the humidity every __ minutes (can be controlled by changing)
+void rainUpdate() {
+
+  // Loop checking rain every __ minutes (default 10 minutes)
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= updateInterval) {
+    previousMillis = currentMillis;
+
+    bool overrideState = overrideActivated(overrideOut);
+
+    // Only checks the humidity if the cover is out and the override switch has not been pressed
+    if (overrideState = false) {
+      if (coverOut = true) {
+          humidityCheck();
+          if (coverOut = false) {
+            closeCover();
+    }
+   }
+  }
+ }
+}
+
+// Opens the cover
+void openCover() {
+  // Prints "opening cover" on the LCD
+  checkCover(true);
+  Serial.print("Opening Cover...");
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Opening");
+  lcd.setCursor(0,1);
+  lcd.print("Cover");
+  // Activates the motor to push the cover out
+  int i;
+  digitalWrite(dirpin, LOW);     // Set the direction.
+  delay(100);
+  for (i = 0; i<stepsPerOpen; i++)
+  {
+  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+  delayMicroseconds(500);      // This delay time is close to top speed for this
+  }
+  }                             // particular motor. Any faster the motor stalls.
+
+// Closes the cover
+void closeCover() {
+  // Prints "Closing Cover" on the LCD
+  coverOut = checkCover(false);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Closing");
+  lcd.setCursor(0,1);
+  lcd.print("Cover");
+  // Activates the motor to pull the cover in
+  int i;
+  digitalWrite(dirpin, HIGH);    // Change direction.
+  delay(100);
+  for (i = 0; i<stepsPerOpen; i++)
+  {
+  digitalWrite(steppin, LOW);  // This LOW to HIGH change is what creates the
+  digitalWrite(steppin, HIGH); // "Rising Edge" so the easydriver knows to when to step.
+  delayMicroseconds(500);      // This delay time is close to top speed for this
+  }                              // particular motor. Any faster the motor stalls.
+  }
+
+// Checks if the cover is pulled out or in
+bool checkCover(bool coverOut) {
+  return coverOut;
+}
+
+// Checks if the cover is pulled out from the override button
+bool overrideActivated(bool overrideOut) {
+  return overrideOut;
+}
+
+
+// BASE FUNCTIONS
+
 
 void setup() {
   Serial.begin(9600);
@@ -150,50 +227,8 @@ void setup() {
 
 void loop() {
 
+overrideCheck();
+pressureCheck();
+rainUpdate();
 
-// OVERRIDE BUTTON
-
-overrideState = digitalRead(overridePin);
-
-  if (overrideState == LOW) {
-    if (coverOut == false) {
-      openCover();
-      coverOut = true;
-}
-    else {
-      closeCover();
-      coverOut = false;
-    }
-}
-
-// CHECK PRESSURE
-
- int pressure = analogRead(A0);
- delay(50);
-
- // IF PRESSURE DETECTED, CHECK HUMIDITY
- if (pressure > pressureThreshold) {
-  Serial.print("Pressure: ");
-  Serial.println(pressure);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Pressure");
-  lcd.setCursor(0,1);
-  lcd.print("detected");
-  delay(1000);
-  checkHumidity();
-  }
-// RAIN UPDATING + CLOSING COVER IF HUMIDITY < 90% EVERY 10 MINUTES
-
-unsigned long currentMillis = millis();
-if (currentMillis - previousMillis >= interval) {
-  previousMillis = currentMillis;
-  if (coverOut = true) {
-    checkHumidity();
-    if (coverOut = false) {
-      closeCover();
-      coverOut = false;
-      }
-    }
-  }
 }
